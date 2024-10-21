@@ -2,17 +2,26 @@
   <div class="projects-page">
     <header class="projects-header">
       <h2>Projects</h2>
-      <VButton @click="showModal = true" color="primary">New Project</VButton>
+      <VButton @click="openModal" color="primary">New Project</VButton>
     </header>
 
     <div v-if="loading" class="loading">Loading...</div>
     <div v-else>
       <VFlexTable :data="projects" :columns="columns">
-        <template #actions="{ row }">
-          <VButton @click="editProject(row)" color="warning">Edit</VButton>
-          <VButton @click="deleteProject(row.id)" color="danger"
-            >Delete</VButton
-          >
+        <template #body-cell="{ row, column }">
+          <VButtons v-if="column.key === 'actions'">
+            <VIconButton @click="openModal(row)" icon="lucide:edit" />
+            <VIconButton @click="deleteProject(row._id)" icon="lucide:trash" />
+
+            <VButton
+              v-if="selectedProjectId !== row._id"
+              @click="handleSelectProject(row)"
+            >
+              Set as Active
+            </VButton>
+
+            <VButton v-else color="primary">Active</VButton>
+          </VButtons>
         </template>
       </VFlexTable>
     </div>
@@ -21,15 +30,11 @@
     <VModal
       :open="showModal"
       @close="closeModal"
+      actions="right"
       :title="form?._id ? 'Edit Project' : 'New Project'"
     >
       <template #content>
-        <div class="modal-card">
-          <header class="modal-card-head">
-            <p class="modal-card-title">
-              {{ form?._id ? "Edit Project" : "New Project" }}
-            </p>
-          </header>
+        <div class="modal-card" v-if="form">
           <section class="modal-card-body">
             <VField label="Name">
               <VControl>
@@ -50,11 +55,11 @@
               </VControl>
             </VField>
           </section>
-          <footer class="modal-card-foot">
-            <VButton @click="saveProject" color="primary">Save</VButton>
-            <VButton @click="closeModal">Cancel</VButton>
-          </footer>
         </div>
+      </template>
+
+      <template #action>
+        <VButton @click="saveProject" color="primary">Save</VButton>
       </template>
     </VModal>
   </div>
@@ -84,10 +89,6 @@ const columns = {
   },
 };
 
-onMounted(async () => {
-  await loadProjects();
-});
-
 const loadProjects = async () => {
   loading.value = true;
   try {
@@ -109,7 +110,7 @@ const closeModal = () => {
 
 const saveProject = async () => {
   try {
-    if (projectStore.selectedProject) {
+    if (form.value?._id) {
       await ProjectService.updateProject(form.value as Project);
     } else {
       await ProjectService.createProject(form.value as Project);
@@ -121,9 +122,14 @@ const saveProject = async () => {
   }
 };
 
-const editProject = (project: Project) => {
-  form.value = { name: project.name, description: project.description };
+const openModal = (project?: Project) => {
   showModal.value = true;
+
+  if (project) {
+    form.value = { ...project };
+  } else {
+    form.value = { name: "", description: "" };
+  }
 };
 
 const deleteProject = async (projectId: string) => {
@@ -134,6 +140,18 @@ const deleteProject = async (projectId: string) => {
     console.error("Error deleting project:", error);
   }
 };
+
+const handleSelectProject = (project: Project) => {
+  projectStore.setSelectedProject(project._id);
+};
+
+const pageTitle = useState("page-title");
+
+onMounted(async () => {
+  await loadProjects();
+
+  pageTitle.value = "Projects";
+});
 </script>
 
 <style scoped>

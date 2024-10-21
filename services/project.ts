@@ -3,7 +3,7 @@ import type { Project } from "~/models/project";
 export class ProjectService {
   static async fetchProjects(): Promise<Project[]> {
     try {
-      const { data, error } = await useApi<Project[]>("/api/projects");
+      const { data, error } = await useApi<Project[]>("/projects");
       if (error) {
         throw new Error("Error fetching projects: " + error);
       }
@@ -31,7 +31,7 @@ export class ProjectService {
 
   static async createProject(project: Project): Promise<Project> {
     try {
-      const { data, error } = await useApi<Project>("/api/projects", {
+      const { data, error } = await useApi<Project>("/projects", {
         method: "POST",
         body: JSON.stringify(project),
       });
@@ -48,7 +48,7 @@ export class ProjectService {
   static async updateProject(project: Project): Promise<Project> {
     try {
       const { data, error } = await useApi<Project>(
-        `/api/projects/${project._id}`,
+        `/projects/${project._id}`,
         {
           method: "PUT",
           body: JSON.stringify(project),
@@ -66,7 +66,7 @@ export class ProjectService {
 
   static async deleteProject(projectId: string): Promise<void> {
     try {
-      const { error } = await useApi<void>(`/api/projects/${projectId}`, {
+      const { error } = await useApi<void>(`/projects/${projectId}`, {
         method: "DELETE",
       });
       if (error) {

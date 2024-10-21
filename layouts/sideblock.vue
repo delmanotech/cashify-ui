@@ -16,6 +16,13 @@ const links = ref<SideblockItem[]>([
   },
   {
     type: "link",
+    label: "Categories",
+    icon: "lucide:tag",
+    to: "/app/categories",
+  },
+
+  {
+    type: "link",
     label: "Tasks",
     icon: "lucide:check",
     to: "/app/tasks",
